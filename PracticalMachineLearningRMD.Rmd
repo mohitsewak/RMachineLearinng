@@ -1,0 +1,98 @@
+Assessment R Markdown
+========================================================
+
+## This is a R markdown for the Assessment (Peer Reviewed) for the Practical Machine Learning Course from the John Hopkinson University
+
+### **Author** - Mohit Sewak - *mohitsewak@gmail.com*
+
+#### Built on R version 2.15.2, using R Studio Version 0.98.507, Posted on GitHub Repository [mohitsewak/RMachineLearning] (http://mohitsewak.github.io/RMachineLearinng/) using gw-pages.
+
+
+Loading required libraries (Results Hidden, Warnings OFF, Messages OFF)
+
+```{r libraries, results='hide',warning=FALSE,message=FALSE}
+library(lattice)
+library(ggplot2)
+library(graphics)
+library(Hmisc)
+library(e1071)
+library(caret)
+
+```
+
+Reading (& caching) Files.
+
+```{r reading_files, cache=TRUE}
+training = read.csv("pml-training.csv")
+testing =  read.csv("pml-testing.csv")
+```
+
+
+Creating summary and viewing the top few records, and seeing paired scatter plots in the training file (Results Hidden, Output Cached).
+
+
+```{r data_summary, results="hide", cache=TRUE}
+summary(training)
+head(training)
+```
+
+Since the data size, and number of feature vectors are huge, so reducing both the data size for plots and also the number of columns in a set of paired visualization
+
+```{r pair_plots, cache=TRUE,fig.width=7, fig.height=6}
+plot(training)
+pairs(training[1:10000,1:10])
+pairs(training[1:10000,11:20])
+pairs(training[1:10000,21:30])
+```
+
+Since most of the columns have no data, or predictive power, it might not be conducive to use them as-is.
+<p> Conducting the following prepocessing operations:</p>
+- Removing Near Zero Value Predictors
+- Principal Component Axis (PCA) rotation to optimize/ reduce dimensions in the data set 
+- (Nt: Variable 160 = target variable named "classe"")
+
+```{r preProcess_NZV, cache=TRUE}
+nzv <- nearZeroVar(training[,-160])
+dim(training)
+nzv_training <- training[,-nzv]
+dim(nzv_training)
+```
+
+Finding numric variables, as PCA can be applied only on numeric variables
+
+```{r preProcess_NumericVar, cache=TRUE}
+numericvars <- NULL
+numericvarsid <- NULL
+
+non_numericvars <- NULL
+non_numericvarsid <- NULL
+
+id<-0L
+
+for (Var in names(nzv_training)) {
+  
+  id<-id+1
+  
+  if(class(nzv_training[,Var]) == 'integer' | class(nzv_training[,Var]) == 'numeric') {
+    numericvars <- c(numericvars,Var)
+    numericvarsid <- c(numericvarsid,id)
+    }
+  else {
+    non_numericvars <- c(non_numericvars,Var)
+    non_numericvarsid <- c(non_numericvarsid,id)
+    }
+  }
+
+summary(numericvars)
+numericvarsid
+```
+
+Conducting PCA on Numeric Variables
+
+```{r preProcess_PCA, cache=TRUE}
+
+numPCATrain<-preProcess(nzv_training[,numericvarsid],method="pca",thresh=0.80)
+numPCATrain
+
+```
+

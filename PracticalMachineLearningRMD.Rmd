@@ -8,7 +8,7 @@ Assessment R Markdown
 #### Built on R version 2.15.2, using R Studio Version 0.98.507, Posted on GitHub Repository [mohitsewak/RMachineLearning] (http://mohitsewak.github.io/RMachineLearinng/) using gw-pages.
 
 
-Loading required libraries (Results Hidden, Warnings OFF, Messages OFF)
+Loading required libraries (Results Hidden, Warnings OFF, Messages OFF), and setting seed for reproducibility.
 
 ```{r libraries, results='hide',warning=FALSE,message=FALSE}
 library(lattice)
@@ -17,14 +17,20 @@ library(graphics)
 library(Hmisc)
 library(e1071)
 library(caret)
-
+library(ipred)
+library(RANN)
+set.seed(1234)
 ```
 
-Reading (& caching) Files.
+Reading (& caching) Files, and making training and verification data sets.
 
 ```{r reading_files, cache=TRUE}
-training = read.csv("pml-training.csv")
-testing =  read.csv("pml-testing.csv")
+trainingCSV = read.csv("pml-training.csv")
+testingCSV =  read.csv("pml-testing.csv")
+inTrain <- createDataPartition(trainingCSV$classe, p=0.75, list=FALSE)
+training <- trainingCSV[inTrain, ]
+verification <- trainingCSV[-inTrain, ]
+
 ```
 
 
@@ -64,6 +70,8 @@ nzv <- nearZeroVar(training[,-160])
 dim(training)
 nzv_training <- training[,-nzv]
 dim(nzv_training)
+
+verification<-verification[,-nzv]
 ```
 
 Finding numric variables, as PCA can be applied only on numeric variables
@@ -95,15 +103,43 @@ summary(numericvars)
 numericvarsid
 ```
 
-Seeing the correlation amongst the numeric variables and Conducting PCA on them.
+Seeing the correlation amongst the numeric variables, with less than 60% null values and Conducting PCA on them after carrying out bag tree imputations for the NA values.
 
 ```{r preProcess_PCA, cache=TRUE}
-m<-abs(cor(nzv_training[,numericvarsid]))
+numericTraining<-nzv_training[,numericvarsid]
+numericVerification<-verification[,numericvarsid]
+numericNANTraining<-numericTraining[,colSums(is.na(numericTraining)) >= 0.4*nrow(numericTraining)]
+numericVerification<-verification[,colSums(is.na(numericTraining)) >= 0.4*nrow(numericTraining)]
+
+m<-abs(cor(numericNANTraining))
 diag(m)<-0
 which(m>0.75,arr.ind=T)
 
-numPCATrain<-preProcess(nzv_training[,numericvarsid],method="pca",thresh=0.80,na.remove = TRUE)
+preProcImpute <- preProcess(numericNANTraining,method="knnImpute")
+numericNANTrainingImputed<- predict(preProcImpute, numericNANTraining)
+numericVerification<- predict(preProcImpute, numericVerification)
+
+numPCATrain<-preProcess(numericNANTrainingImputed,method="pca",thresh=0.80)
 numPCATrain
 
+numericTrainingData<-predict(numPCATrain,numericNANTrainingImputed)
+numericVerification<-predict(numPCATrain,numericVerification)
+summary(numericTrainingData)
 ```
+
+Combining the treated numeric data with the categorical predictors and target.
+
+```{r combineData, cache=TRUE}
+trainingData<-cbind(numericTrainingData,nzv_training[,non_numericvarsid])
+verificationData<-cbind(numericVerification,verification[,non_numericvarsid])
+```
+
+Training and applying model.
+
+```{r modeling, cache=TRUE}
+knnFit2 <- train(classe ~ ., data= trainingData,method = "knn",preProcess = c("center", "scale","knnImpute","pca"),tuneLength = 10, trControl = trainControl(method = "boot"))
+
+confusionMatrix(predict(knnFit2, verificationData[,-verificationData$classe], verification[,verificationData$classe]))
+```
+
 

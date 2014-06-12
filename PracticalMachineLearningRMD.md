@@ -21,12 +21,15 @@ library(caret)
 ```
 
 
-Reading (& caching) Files.
+Reading (& caching) Files, and making training and verification data sets.
 
 
 ```r
-training = read.csv("pml-training.csv")
-testing = read.csv("pml-testing.csv")
+trainingCSV = read.csv("pml-training.csv")
+testingCSV = read.csv("pml-testing.csv")
+inTrain <- createDataPartition(trainingCSV$classe, p = 0.75, list = FALSE)
+training <- trainingCSV[inTrain, ]
+verification <- trainingCSV[-inTrain, ]
 ```
 
 
@@ -152,100 +155,62 @@ numericvarsid
 ```
 
 
-Seeing the correlation amongst the numeric variables and Conducting PCA on them.
+Seeing the correlation amongst the numeric variables, with less than 60% null values and Conducting PCA on them.
 
 
 ```r
-m <- abs(cor(nzv_training[, numericvarsid]))
+numericTraining <- nzv_training[, numericvarsid]
+numericNANTraining <- numericTraining[, colSums(is.na(numericTraining)) >= 0.4 * 
+    nrow(numericTraining)]
+m <- abs(cor(numericNANTraining))
 diag(m) <- 0
 which(m > 0.75, arr.ind = T)
 ```
 
 ```
-##                      row col
-## magnet_dumbbell_z     80   2
-## yaw_belt               7   5
-## total_accel_belt       8   5
-## accel_belt_y          29   5
-## accel_belt_z          30   5
-## accel_arm_y           43   5
-## accel_belt_x          28   6
-## magnet_belt_x         31   6
-## roll_belt              5   7
-## total_accel_belt       8   7
-## accel_belt_z          30   7
-## roll_belt              5   8
-## yaw_belt               7   8
-## accel_belt_y          29   8
-## accel_belt_z          30   8
-## accel_arm_y           43   8
-## magnet_dumbbell_y     79  25
-## pitch_belt             6  28
-## magnet_belt_x         31  28
-## roll_belt              5  29
-## total_accel_belt       8  29
-## accel_belt_z          30  29
-## roll_belt              5  30
-## yaw_belt               7  30
-## total_accel_belt       8  30
-## accel_belt_y          29  30
-## accel_arm_y           43  30
-## pitch_belt             6  31
-## accel_belt_x          28  31
-## magnet_belt_z         33  32
-## magnet_belt_y         32  33
-## gyros_arm_y           40  39
-## gyros_arm_x           39  40
-## magnet_arm_x          45  42
-## roll_belt              5  43
-## total_accel_belt       8  43
-## accel_belt_z          30  43
-## magnet_arm_z          47  44
-## accel_arm_x           42  45
-## magnet_arm_y          46  45
-## magnet_arm_x          45  46
-## magnet_arm_z          47  46
-## accel_arm_z           44  47
-## magnet_arm_y          46  47
-## accel_dumbbell_x      75  53
-## accel_dumbbell_z      77  54
-## accel_dumbbell_y      76  61
-## gyros_dumbbell_z      74  72
-## gyros_forearm_z       91  72
-## gyros_dumbbell_x      72  74
-## gyros_forearm_z       91  74
-## pitch_dumbbell        53  75
-## total_accel_dumbbell  61  76
-## yaw_dumbbell          54  77
-## magnet_dumbbell_y     79  78
-## gyros_belt_x          25  79
-## magnet_dumbbell_x     78  79
-## raw_timestamp_part_1   2  80
-## gyros_forearm_z       91  90
-## gyros_dumbbell_x      72  91
-## gyros_dumbbell_z      74  91
-## gyros_forearm_y       90  91
-## magnet_forearm_y      96  93
-## accel_forearm_y       93  96
+##      row col
 ```
 
 ```r
 
-numPCATrain <- preProcess(nzv_training[, numericvarsid], method = "pca", thresh = 0.8, 
-    na.remove = TRUE)
+numPCATrain <- preProcess(numericNANTraining, method = "pca", thresh = 0.8)
 numPCATrain
 ```
 
 ```
 ## 
 ## Call:
-## preProcess.default(x = nzv_training[, numericvarsid], method =
-##  "pca", thresh = 0.8, na.remove = TRUE)
+## preProcess.default(x = numericNANTraining, method = "pca", thresh = 0.8)
 ## 
-## Created from 406 samples and 97 variables
+## Created from 406 samples and 41 variables
 ## Pre-processing: principal component signal extraction, scaled, centered 
 ## 
-## PCA needed 17 components to capture 80 percent of the variance
+## PCA needed 8 components to capture 80 percent of the variance
+```
+
+```r
+
+numericTrainingData <- predict(numPCATrain, numericNANTraining)
+summary(numericTrainingData)
+```
+
+```
+##       PC1             PC2             PC3             PC4       
+##  Min.   :-9      Min.   :-4      Min.   :-8      Min.   :-6     
+##  1st Qu.:-2      1st Qu.:-2      1st Qu.:-2      1st Qu.:-2     
+##  Median : 0      Median : 0      Median : 0      Median : 0     
+##  Mean   : 0      Mean   : 0      Mean   : 0      Mean   : 0     
+##  3rd Qu.: 2      3rd Qu.: 1      3rd Qu.: 2      3rd Qu.: 1     
+##  Max.   : 5      Max.   : 9      Max.   : 4      Max.   : 8     
+##  NA's   :19216   NA's   :19216   NA's   :19216   NA's   :19216  
+##       PC5             PC6             PC7             PC8       
+##  Min.   :-2      Min.   :-4      Min.   :-4      Min.   :-4     
+##  1st Qu.: 0      1st Qu.:-1      1st Qu.:-1      1st Qu.:-1     
+##  Median : 0      Median : 0      Median : 0      Median : 0     
+##  Mean   : 0      Mean   : 0      Mean   : 0      Mean   : 0     
+##  3rd Qu.: 0      3rd Qu.: 1      3rd Qu.: 1      3rd Qu.: 1     
+##  Max.   :28      Max.   : 5      Max.   : 4      Max.   : 3     
+##  NA's   :19216   NA's   :19216   NA's   :19216   NA's   :19216
 ```
 
 

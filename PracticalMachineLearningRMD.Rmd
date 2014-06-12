@@ -36,7 +36,15 @@ summary(training)
 head(training)
 ```
 
-Since the data size, and number of feature vectors are huge, so reducing both the data size for plots and also the number of columns in a set of paired visualization
+Trying to explore the data, esp the relations between variables. 
+
+<p></p>
+
+<p> Since the number of features are huge, so most of the comprehensive plot based visualizations will break.</p>
+
+<p></p>
+
+<p>There we may try to see multiple subsetted plot (as some examples given), or better still, see the tabular correlation matrix of the ones which are highly correlated. We will do these later as for this we will have to segregate the numeric variables and conduct this analysis on those variables alone.</p>
 
 ```{r pair_plots, cache=TRUE,fig.width=7, fig.height=6}
 plot(training)
@@ -48,7 +56,7 @@ pairs(training[1:10000,21:30])
 Since most of the columns have no data, or predictive power, it might not be conducive to use them as-is.
 <p> Conducting the following prepocessing operations:</p>
 - Removing Near Zero Value Predictors
-- Principal Component Axis (PCA) rotation to optimize/ reduce dimensions in the data set 
+- Principal Component Analysis (PCA) orthogonal rotation to optimize/ reduce dimensions in the data set 
 - (Nt: Variable 160 = target variable named "classe"")
 
 ```{r preProcess_NZV, cache=TRUE}
@@ -87,11 +95,14 @@ summary(numericvars)
 numericvarsid
 ```
 
-Conducting PCA on Numeric Variables
+Seeing the correlation amongst the numeric variables and Conducting PCA on them.
 
 ```{r preProcess_PCA, cache=TRUE}
+m<-abs(cor(nzv_training[,numericvarsid]))
+diag(m)<-0
+which(m>0.75,arr.ind=T)
 
-numPCATrain<-preProcess(nzv_training[,numericvarsid],method="pca",thresh=0.80)
+numPCATrain<-preProcess(nzv_training[,numericvarsid],method="pca",thresh=0.80,na.remove = TRUE)
 numPCATrain
 
 ```

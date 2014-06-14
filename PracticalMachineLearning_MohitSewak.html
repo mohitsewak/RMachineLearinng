@@ -342,10 +342,10 @@ print(model)
 
 <pre><code class="r">accurate&lt;-c(as.numeric(predict(model,newdata=validation[,-ncol(validation)])==validation$classe))
 accuracy&lt;-sum(accurate)*100/nrow(validation)
-message(&quot;Model Accuracy as tested over Validation set = &quot; , format(round(accuracy, 2), nsmall = 2), &quot;%&quot;)
+message(&quot;Expected out of sample error using cross-validation is = &quot; , format(round(100-accuracy, 2), nsmall = 2), &quot;%&quot;)
 </code></pre>
 
-<pre><code>## Model Accuracy as tested over Validation set = 99.95%
+<pre><code>## Expected out of sample error using cross-validation is = 0.05%
 </code></pre>
 
 <p>Predicting the new values in the testing csv provided.</p>

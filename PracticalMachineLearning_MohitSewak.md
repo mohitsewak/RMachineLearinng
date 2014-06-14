@@ -191,11 +191,11 @@ confusionMatrix(predict(model,newdata=validation[,-ncol(validation)]),validation
 ```r
 accurate<-c(as.numeric(predict(model,newdata=validation[,-ncol(validation)])==validation$classe))
 accuracy<-sum(accurate)*100/nrow(validation)
-message("Model Accuracy as tested over Validation set = " , format(round(accuracy, 2), nsmall = 2), "%")
+message("Expected out of sample error using cross-validation is = " , format(round(100-accuracy, 2), nsmall = 2), "%")
 ```
 
 ```
-## Model Accuracy as tested over Validation set = 99.95%
+## Expected out of sample error using cross-validation is = 0.05%
 ```
 
 Predicting the new values in the testing csv provided.

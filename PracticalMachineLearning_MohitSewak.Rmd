@@ -18,7 +18,6 @@ Loading required libraries (Results Hidden, Warnings OFF, Messages OFF), and set
 
 ```{r libraries, results='hide',warning=FALSE,message=FALSE}
 library(caret)
-library(rpart)
 library(randomForest)
 set.seed(1234)
 ```
@@ -46,17 +45,15 @@ Trying to explore the data, esp the relations between variables.
 
 <p></p>
 
-<p> Since the number of features are huge, so most of the comprehensive plot based visualizations will break.</p>
+<p> Since the number of features are huge, so most of the comprehensive plot based visualizations will break. Refer to the below error- Error: figure margins too large</p>
 
 <p></p>
 
 <p>There we may try to see multiple subsetted plot (as some examples given), or better still, see the tabular correlation matrix of the ones which are highly correlated.</p>
 
-```{r pair_plots, cache=TRUE,fig.width=7, fig.height=6}
+```{r pair_plots, cache=TRUE,fig.width=7, fig.height=6, cache=TRUE}
 plot(training)
 pairs(training[1:10000,1:10])
-pairs(training[1:10000,11:20])
-pairs(training[1:10000,21:30])
 ```
 
 Since most of the columns have no data, or predictive power, it might not be conducive to use them as-is. Therefore filtering out fields with a lot of (more than 60%) null values.
@@ -84,7 +81,7 @@ head(importance(model))
 
 Evaluating the model on the evaluation dataset.
 
-```{r validation, cache=TRUE}
+```{r validation, fig.width=7, fig.height=6, cache=TRUE}
 plot(predict(model,newdata=validation[,-ncol(validation)]),validation$classe)
 confusionMatrix(predict(model,newdata=validation[,-ncol(validation)]),validation$classe)
 

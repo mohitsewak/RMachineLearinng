@@ -19,7 +19,6 @@ Loading required libraries (Results Hidden, Warnings OFF, Messages OFF), and set
 
 ```r
 library(caret)
-library(rpart)
 library(randomForest)
 set.seed(1234)
 ```
@@ -48,7 +47,7 @@ Trying to explore the data, esp the relations between variables.
 
 <p></p>
 
-<p> Since the number of features are huge, so most of the comprehensive plot based visualizations will break.</p>
+<p> Since the number of features are huge, so most of the comprehensive plot based visualizations will break. Refer to the below error- Error: figure margins too large</p>
 
 <p></p>
 
@@ -67,19 +66,7 @@ plot(training)
 pairs(training[1:10000,1:10])
 ```
 
-![plot of chunk pair_plots](figure/pair_plots1.png) 
-
-```r
-pairs(training[1:10000,11:20])
-```
-
-![plot of chunk pair_plots](figure/pair_plots2.png) 
-
-```r
-pairs(training[1:10000,21:30])
-```
-
-![plot of chunk pair_plots](figure/pair_plots3.png) 
+![plot of chunk pair_plots](figure/pair_plots.png) 
 
 Since most of the columns have no data, or predictive power, it might not be conducive to use them as-is. Therefore filtering out fields with a lot of (more than 60%) null values.
 

@@ -1,0 +1,17 @@
+{
+    "contents" : "answers = rep(\"A\", 20)\n\npml_write_files = function(x){\n  n = length(x)\n  for(i in 1:n){\n    filename = paste0(\"problem_id_\",i,\".txt\")\n    write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)\n  }\n}\n\npml_write_files(answers)",
+    "created" : 1402738849250.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3352739626",
+    "id" : "62DD8240",
+    "lastKnownWriteTime" : 1402738926,
+    "path" : "~/Documents/GitHub/RMachineLearinng/SubmissionProject_Script.R",
+    "project_path" : "SubmissionProject_Script.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}

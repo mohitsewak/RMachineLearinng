@@ -113,7 +113,7 @@ numericVerification<-verification[,colSums(is.na(numericTraining)) >= 0.4*nrow(n
 
 m<-abs(cor(numericNANTraining))
 diag(m)<-0
-which(m>0.75,arr.ind=T)
+//which(m>0.75,arr.ind=T)
 
 preProcImpute <- preProcess(numericNANTraining,method="knnImpute")
 numericNANTrainingImputed<- predict(preProcImpute, numericNANTraining)
